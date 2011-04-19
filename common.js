@@ -34,6 +34,9 @@ function _(msgid) {
 function printf(msg, replaceary) {
 	return Gettext.strargs(msg, replaceary); 
 }
+function escapeQuotes(s) {
+	return s.replace(/"/g, '\\"').replace(/'/g, "\\'");
+}
 function escapeHtml(s) {
 	return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }

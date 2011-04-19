@@ -54,7 +54,7 @@ class Poll
 			@extensiondata[$cgi["extID"]][$cgi["key"]][:val] = $cgi["value"]
 			@extensiondata[$cgi["extID"]][$cgi["key"]][:write_pw] = $cgi["write_passwd_new"]
 			@extensiondata[$cgi["extID"]][$cgi["key"]][:read_pw] = $cgi["read_passwd"]
-			store "Added data for #{$cgi["extID"]}, #{$cgi["key"]}"
+			store "Added data for #{$cgi["extID"]}"
 		else
 			$header["status"] = CGI::HTTP_STATUS[403]
 			"You are not allowed to store this!"

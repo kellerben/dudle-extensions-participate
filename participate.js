@@ -24,20 +24,16 @@ Poll.participantRowTitle = function (username, column) {
 };
 
 Poll.rmRow = function (name) {
-	if ($("#" + gfHtmlID(name) + "_tr").length === 0) {
+	if ($("#" + gfHtmlID(escapeHtml(name)) + "_tr").length === 0) {
 		throw "There is no User named: " + name + "!";
 	}
 	var colsSum = {};
-	$.each(Poll.columns, function (i) {
-		var col = Poll.columns[i];
-		if ($("#" + gfHtmlID(name) + "_tr td[title='" + unescapeHtml(Poll.participantRowTitle(name, col)) + "']")[0].classList[0].match(/yes/)) {
-			colsSum[col] = -1;
-		} else {
-			colsSum[col] = 0; 
-		}
+	$.each(Poll.getColumns(name), function (col, htmlclass) {
+		colsSum[col] = htmlclass.match(/yes/) ? -1 : 0; 
 	});
+
 	Poll.modifySum(colsSum);
-	$("#" + gfHtmlID(name) + "_tr").remove();
+	$("#" + gfHtmlID(escapeHtml(name)) + "_tr").remove();
 };
 
 Poll.addRow = function (name, columns) {
@@ -70,7 +66,6 @@ Poll.modifySum = function (columns) {
 			class: "sum match_" + (Math.round(percentage / 10) * 10).toString()
 		});
 	});
-
 };
 
 Poll.parseNaddRow = function (name, columns) {
@@ -107,13 +102,73 @@ Poll.parseNaddRow = function (name, columns) {
 Poll.oldParticipantRow = [];
 Poll.exchangeAddParticipantRow = function (newInnerTR) {
 	if (typeof(newInnerTR) === 'undefined') {
-		$("#add_participant").replaceWith(Poll.oldParticipantRow[0]);
+		$("#add_participant").replaceWith(Poll.oldParticipantRow[0].clone());
 		Poll.oldParticipantRow = [];
 	} else {
 		Poll.oldParticipantRow.push($("#add_participant"));
 		$("#add_participant").replaceWith("<tr id='add_participant'>" + newInnerTR + "</tr>");
 	}
-}
+};
+
+Poll.getColumns = function (user) {
+	var ret = {};
+	$.each(Poll.columns, function (i) {
+		var col = Poll.columns[i];
+		ret[col] = $("#" + gfHtmlID(escapeHtml(user)) + "_tr td[title='" + unescapeHtml(Poll.participantRowTitle(user, col)) + "']")[0].classList[0];
+	});
+	return ret;
+};
+
+Poll.addSeparartors = function () {
+	$("#add_participant").before($("#separator_top").remove());
+	$("#add_participant").after($("#separator_bottom").remove());
+};
+
+Poll.cancelEdit = function () {
+	$("#add_participant").replaceWith(Poll.currentEditUser);
+	Poll.currentEditUser = "";
+	$("#summary").before(Poll.oldParticipantRow[0].clone());
+	Poll.oldParticipantRow = [];
+	Poll.addSeparartors();
+};
+
+Poll.currentEditUser = "";
+Poll.editUser = function (user) {
+	if (Poll.currentEditUser !== "") {
+		Poll.cancelEdit();
+	}
+
+	Poll.oldParticipantRow.push($("#add_participant"));
+
+	$("#add_participant").remove();
+	var usercols = Poll.getColumns(user);
+	Poll.currentEditUser = $("#" + gfHtmlID(escapeHtml(user)) + "_tr");
+	$("#" + gfHtmlID(escapeHtml(user)) + "_tr").replaceWith(Poll.oldParticipantRow[0].clone());
+	$.each(usercols, function (col, htmlclass) {
+		$("#add_participant_checked_" + gfHtmlID(col) + "_" + htmlclass).click();
+	});
+	$("#add_participant_input")[0].value = user;
+	$("#add_participant_input_td input[name='olduser']")[0].value = user;
+	$("#savebutton").after("<br /><input type='button' value='" + _("Cancel") + "' onclick='Poll.cancelEdit()'/>");
+
+	Poll.addSeparartors();
+};
+
+Poll.error = function (message) {
+	var rand = Math.round(Math.random() * 10000), tr;
+	tr = "<tr id='error_" + rand + "'><td colspan='" + (Poll.columns.length + 3) + "'>";
+	tr += "<div class='hint'>" + escapeHtml(message) + "</div>";
+	tr += "</td></tr>";
+	$("#separator_top").before(tr);
+	window.setTimeout(function () {
+		$("#error_" + rand + " div").animate({
+				opacity: 0,
+				height: 'toggle'
+			}, 500, function () {
+				$("#error_" + rand).remove();
+			});
+	}, 7000);
+};
 
 
 //$.ajax({
