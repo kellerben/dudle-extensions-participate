@@ -17,7 +17,7 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-DOMAIN=dudle_dc-net
+DOMAIN=dudle
 
 locale: $(foreach p,$(wildcard locale/*/$(DOMAIN).po), $(addsuffix .mo,$(basename $p)))
 locale/$(DOMAIN).pot: *.js
@@ -41,13 +41,10 @@ locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 check: $(foreach p,$(wildcard *.js), $p.check)
 %.js.check: %.js
 	echo -n "/*jslint cap: true, newcap: false, regexp: false, strict: true, browser: true, nomen: false, plusplus: false */" > /tmp/$*.js
-	echo -n "/*global alert, confirm, window, localStorage, Ajax, Element, Hash, $$, $$" >> /tmp/$*.js
-	echo -n "$$, $$" >> /tmp/$*.js
-	echo -n "H, $$" >> /tmp/$*.js
-	echo -n "A, $$" >> /tmp/$*.js
-	echo -n "F, _, printf, Autocompleter, BigInteger, SecureRandom, SHA256_hash, AES_Init, AES_Done, AES_ExpandKey, AES_Decrypt */" >> /tmp/$*.js
+	echo -n "/*global alert, confirm, window, localStorage, $$, _, printf, escapeHtml, gfHtmlID, cloneObject, Poll" >> /tmp/$*.js
+	echo -n " */" >> /tmp/$*.js
 	cat $*.js >> /tmp/$*.js
-	rhino lib/jslint.js /tmp/$*.js
+	jslint /tmp/$*.js
 
 compressed: $(foreach p,$(wildcard *.js), compressed/$p)
 compressed/%.js: %.js.check %.js

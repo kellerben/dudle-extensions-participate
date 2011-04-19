@@ -18,8 +18,9 @@
  ***************************************************************************/
 
 "use strict";
+/*global Gettext */
 
-if (typeof(Poll) == "undefined") {
+if (typeof(Poll) === "undefined") {
 	var Poll = {};
 } else {
 	alert("Somebody captured the Namespace 'Poll'!!!");	
@@ -79,18 +80,17 @@ function gfBrowserName() {
 }
 
 function cloneObject(source) {
-    for (i in source) {
-        if (typeof source[i] == 'source') {
-            this[i] = new cloneObject(source[i]);
-        }
-        else{
-            this[i] = source[i];
+	for (var i in source) {
+		if (typeof source[i] === 'source') {
+			this[i] = new cloneObject(source[i]);
+		} else {
+			this[i] = source[i];
+		}
 	}
-    }
 }
 
 Poll.store = function (extID, key, value) {
-	var params = arguments[3] || {};
+	var successfunc, params = arguments[3] || {};
 	params.pollID = Poll.ID;
 	params.extID = extID;
 	params.service = "store";
@@ -98,32 +98,32 @@ Poll.store = function (extID, key, value) {
 	params.value = value;
 
 	if (params.success) {
-		var successfunc = params.success;
+		successfunc = params.success;
 		delete params.success;
 	}
 	$.ajax({
 		url: Poll.extDir + "/webservices.cgi",
 		data: params,
-		method:"post",
+		method: "post",
 		success: successfunc
 	});
-}
+};
 
 Poll.load = function (extID, key) {
-	var params = arguments[2] || {};
+	var successfunc, params = arguments[2] || {};
 	params.pollID = Poll.ID;
 	params.extID = extID;
 	params.service = "load";
 	params.key = key;
 
 	if (params.success) {
-		var successfunc = params.success;
+		successfunc = params.success;
 		delete params.success;
 	}
 	$.ajax({
 		url: Poll.extDir + "/webservices.cgi",
 		data: params,
-		method:"get",
+		method: "get",
 		success: successfunc
 	});
-}
+};
