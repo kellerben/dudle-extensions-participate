@@ -104,6 +104,17 @@ Poll.parseNaddRow = function (name, columns) {
 	Poll.modifySum(colsSum);
 };
 
+Poll.oldParticipantRow = [];
+Poll.exchangeAddParticipantRow = function (newInnerTR) {
+	if (typeof(newInnerTR) === 'undefined') {
+		$("#add_participant").replaceWith(Poll.oldParticipantRow[0]);
+		Poll.oldParticipantRow = [];
+	} else {
+		Poll.oldParticipantRow.push($("#add_participant"));
+		$("#add_participant").replaceWith("<tr id='add_participant'>" + newInnerTR + "</tr>");
+	}
+}
+
 
 //$.ajax({
 //  url: Poll.extDir + "/webservices.cgi",
