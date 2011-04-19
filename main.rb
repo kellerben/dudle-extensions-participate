@@ -17,17 +17,17 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+require "json"
 
 class Extension
+	attr_reader :basedir
 	def initialize(basedir)
-		@basedir = basedir + "/extensions/participate"
-#FIXME remove?		$d.html.add_script("var gsDCExtensiondir='#{@basedir}/';")
-
-#     if File.exists?("#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po")
-#       $d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{$d.html.relative_dir}#{@basedir}/locale/#{GetText.locale.language}/dudle_dc-net.po' />")
-#     end
+		@basedir = basedir + "/extensions/#{$current_ext_dir}"
+		pofile = "#{@basedir}/locale/#{GetText.locale.language}/dudle.po"
+		if File.exists?(pofile)
+			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{pofile}' />")
+		end
 		add_lib("Gettext")
-#     $d.html.add_head_script("#{@basedir}/lib/prototype.js")
 		
 	end
 	def add_lib(jslib)
@@ -45,7 +45,18 @@ end
 if $d.is_poll?
 		e = Extension.new("..")
 		e.add_script("common")
-		$d.html.add_script("Poll.ID = '#{$d.urlsuffix}';")
+		$d.html.add_script(<<POLLSPECIFIC
+Poll.ID = '#{$d.urlsuffix}';
+Poll.columns = #{$d.table.head.columns.to_json};
+Poll.Strings.yes   = {symb: '#{YES}',   val: '#{Poll::YESVAL}'};
+Poll.Strings.maybe = {symb: '#{MAYBE}', val: '#{Poll::MAYBEVAL}'};
+Poll.Strings.no    = {symb: '#{NO}',    val: '#{Poll::NOVAL}'};
+Poll.Strings.vals = ["yes", "maybe", "no"];
+for	(var i = 0; i < Poll.Strings.vals.length; i++) {
+	Poll.Strings[Poll.Strings[Poll.Strings.vals[i]].val] = Poll.Strings.vals[i];
+}
+POLLSPECIFIC
+			)
 else
 	e = Extension.new(".")
 e.add_script("common")
@@ -54,19 +65,12 @@ e.add_lib("jquery")
 e.add_lib("json2")
 
 $d.html.add_script(<<SCRIPT
-Poll.Strings = {};
 Poll.Strings.Edit = '#{EDIT}';
 Poll.Strings.Delete = '#{DELETE}';
 Poll.Strings.Unknown = '#{UNKNOWN}';
 Poll.Strings.KickOut = '#{DELETE}';
 Poll.Strings.Voted = '#{PASSWORDSTAR}';
-Poll.Strings.yes = '#{YES}';
-Poll.Strings.maybe = '#{MAYBE}';
-Poll.Strings.no = '#{NO}';
-Poll.Strings.yesval = 'ayes';
-Poll.Strings.maybeval = 'bmaybe';
-Poll.Strings.noval = 'cno';
-Poll.extDir = '../extensions/participate';
+Poll.extDir = '#{e.basedir}';
 SCRIPT
 )
 

@@ -20,16 +20,74 @@
 require "pp"
 olddir = Dir.pwd
 Dir.chdir("../../")
-require "git"
+require "config_defaults"
 Dir.chdir(olddir)
+
 require "cgistatus"
 require "json"
+
 class Poll
 	def Poll.webservicedescription_1Polldetails_getColumns
 		{ "return" => "Liste der Spalten" }
 	end
 	def webservice_getColumns
 		@head.columns.to_json
+	end
+
+	def Poll.webservicedescription_2Pollmodification_store
+		{ "return" => '"HTTP202 OR HTTP403"',
+			"input" => ["extID", "key", "value", "read_passwd", "write_passwd_old", "write_passwd_new"],
+			"extID" => "some Identifier, for the extension",
+			"read_passwd" => "password to read (optional)",
+			"write_passwd_old" => "old password to write (optional)",
+			"write_passwd_new" => "new password to write (optional)",
+#       "value" => "json string"
+		}
+	end
+	def webservice_store
+		@extensiondata ||= {}
+		@extensiondata[$cgi["extID"]] ||= {}
+		@extensiondata[$cgi["extID"]][$cgi["key"]] ||= {}
+
+
+		if !@extensiondata[$cgi["extID"]][$cgi["key"]][:write_pw] || @extensiondata[$cgi["extID"]][$cgi["key"]][:write_pw] == $cgi["write_passwd_old"]
+			@extensiondata[$cgi["extID"]][$cgi["key"]][:val] = $cgi["value"]
+			@extensiondata[$cgi["extID"]][$cgi["key"]][:write_pw] = $cgi["write_passwd_new"]
+			@extensiondata[$cgi["extID"]][$cgi["key"]][:read_pw] = $cgi["read_passwd"]
+			store "Added data for #{$cgi["extID"]}, #{$cgi["key"]}"
+		else
+			$header["status"] = CGI::HTTP_STATUS[403]
+			"You are not allowed to store this!"
+		end
+	end
+	def Poll.webservicedescription_2Pollmodification_load
+		{ "return" => '"data OR HTTP404 OR HTTP403"',
+			"input" => ["extID", "key", "read_passwd"],
+			"read_passwd" => "password to read (optional)",
+			"extID" => "some Identifier, for the extension",
+#       "value" => "json string"
+		}
+	end
+	def webservice_load
+		@extensiondata ||= {}
+		unless @extensiondata[$cgi["extID"]]
+			error = "Did not found the extID '#{$cgi['extID']}'" 
+		else
+			unless @extensiondata[$cgi["extID"]][$cgi["key"]]
+				error = "Did not found the key '#{$cgi['key']}'" 
+			end
+		end
+		if error
+			$header["status"] = CGI::HTTP_STATUS[404]
+			error
+		else
+			if @extensiondata[$cgi["extID"]][$cgi["key"]][:read_pw] == $cgi["read_passwd"]
+				@extensiondata[$cgi["extID"]][$cgi["key"]][:val]
+			else
+				$header["status"] = CGI::HTTP_STATUS[403]
+				"You are not allowed to read this!"
+			end
+		end
 	end
 end
 

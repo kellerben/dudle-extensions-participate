@@ -19,9 +19,35 @@
 
 "use strict";
 
+Poll.participantRowTitle = function(username, column) {
+	return username + ": " + column;
+};
+
+Poll.rmRow = function(name) {
+	if ($("#" + gfHtmlID(name) + "_tr").length === 0) {
+		throw "There is no User named: " + name + "!";
+	}
+	var colsSum = {};
+	$.each(Poll.columns, function(i){
+		var col = Poll.columns[i];
+		if($("#" + gfHtmlID(name) + "_tr td[title='" + Poll.participantRowTitle(name,col) + "']")[0].classList[0].match(/yes/)){
+			colsSum[col] = -1;
+		} else {
+			colsSum[col] = 0; 
+		}
+	});
+	Poll.modifySum(colsSum);
+	$("#" + gfHtmlID(name) + "_tr").remove();
+}
+
 Poll.addRow = function(name, columns) {
-	var tr = "<tr class='participantrow'><td></td>";
-	tr += "<td class='name'>" + name + "</td>"
+	var tr = "<tr class='participantrow' id='" + gfHtmlID(name) + "_tr'><td>";
+	tr += columns.firstTD || "";
+	tr += "</td>";
+	tr += "<td class='name'>";
+	tr += columns.name || "";
+	tr += "</td>";
+
 	$.each(Poll.columns, function(i){
 		tr += columns[Poll.columns[i]];
 	});
@@ -32,66 +58,91 @@ Poll.addRow = function(name, columns) {
 Poll.modifySum = function(columns) {
 	$.each(Poll.columns, function(i){
 		var col = Poll.columns[i];
-		var colElem = $("#sum_" + col);
+		var colElem = $("#" + gfHtmlID("sum_" + col));
 		var newSum = parseInt(colElem.text()) + columns[col];
 		colElem.text(newSum);
 		
 		var percentage = newSum*100 / $(".participantrow").size();
-		colElem[0].setAttribute("title", Math.round(percentage).toString()+" %");
-		colElem[0].setAttribute("class", "sum match_" + (Math.round(percentage/10)*10).toString());
+
+		colElem.attr({
+			title: Math.round(percentage).toString()+" %",
+			class: "sum match_" + (Math.round(percentage/10)*10).toString()
+		});
 	});
 
 };
 
 Poll.parseNaddRow = function(name, columns) {
-	var cHtml = {}, cSum = {};
-	$.each(Poll.columns, function(i){
+	var colsHtml = {name: columns.name}, colsSum = {};
+
+	if (columns.editUser && columns.deleteUser) {
+		colsHtml.firstTD = "<span class='edituser'>";
+		colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + name + "\")' title='" + printf(_("Edit User %1 ..."), [name]) + "'>";
+		colsHtml.firstTD += Poll.Strings.Edit + "</a>";
+		colsHtml.firstTD += " | ";
+		colsHtml.firstTD += "<a href='javascript:" + columns.deleteUser + "(\"" + name + "\")' title='" + printf(_("Delete User %1 ..."), [name]) + "'>";
+		colsHtml.firstTD += Poll.Strings.Delete + "</a></span>";
+	}
+
+	$.each(Poll.columns, function(i) {
 		var col = Poll.columns[i];
 		var avail = columns[col];
-		cHtml[col] = "<td class='" + Poll.Strings[avail + "val"] + "' title='" + name + ": " + col + "'>" + Poll.Strings[avail] +"</td>";
-		cSum[col] = avail == "yes" ? 1 : 0;
+		if (Poll.Strings[avail]) {
+			var tdClass = Poll.Strings[Poll.Strings[avail]].val;
+			var tdText = Poll.Strings[Poll.Strings[avail]].symb;
+		} else {
+			var tdClass = 'undecided';
+			var tdText = Poll.Strings.Unknown;
+		}
+
+		colsHtml[col] = "<td class='" + tdClass + "' title='" + Poll.participantRowTitle(name,col) + "'>" + tdText +"</td>";
+		colsSum[col] = avail == Poll.Strings.yes.val ? 1 : 0;
 	});
-	Poll.addRow(name,cHtml);
-	Poll.modifySum(cSum);
+	Poll.addRow(name, colsHtml);
+	Poll.modifySum(colsSum);
 }
 
 
+//$.ajax({
+//  url: Poll.extDir + "/webservices.cgi",
+//  data: {service: 'getColumns', pollID: Poll.ID},
+//  method:"get",
+//  success:function(response){
+//    Poll.columns = JSON.parse(response);
+//  }
+//});
 
+//window.setTimeout(test,3);
 
-$.ajax({
-	url: Poll.extDir + "/webservices.cgi",
-	data: {service: 'getColumns', pollID: Poll.ID},
-	method:"get",
-	success:function(response){
-		Poll.columns = JSON.parse(response);
-
-
-		// test
-		Poll.addRow("foobar",{
+function test() {	// test
+	username = "peter";
+		Poll.addRow(username, {
+			firstTD: "<span class='edituser'><a href='#editUser' username='"+username+"' title='" + printf(_("Edit User %1 ..."), [username]) + "'>" + Poll.Strings.Edit + "</a> | <a href='#deleteUser' username='" + username + "title='" + printf(_("Delete User %1 ..."), [username]) + "'>" + gsDelete + "</a></span>",
+			name: "foobarbaz",
 			"2011-04-25": "<td>a</td>",
 			"2011-04-26": "<td>b</td>",
 			"2011-04-28": "<td>d</td>",
 			"2011-04-27": "<td>c</td>",
 		});
 
-		Poll.parseNaddRow("foo",{
-			"2011-04-25": "yes",
-			"2011-04-26": "yes",
-			"2011-04-27": "no",
-			"2011-04-28": "maybe"
+		Poll.parseNaddRow("foo2",{
+			"2011-04-25": "a_yes__",
+			"2011-04-26": "a_yes__",
+			"2011-04-27": "c_no___",
+			"2011-04-28": "b_maybe"
 		});
-		Poll.parseNaddRow("foo",{
-			"2011-04-25": "yes",
-			"2011-04-26": "yes",
-			"2011-04-27": "no",
-			"2011-04-28": "maybe"
+		Poll.parseNaddRow("foo1",{
+			"2011-04-25": "a_yes__",
+			"2011-04-26": "a_yes__",
+			"2011-04-27": "c_no___",
+			"2011-04-28": "b_maybe"
 		});
-		Poll.parseNaddRow("foo",{
-			"2011-04-25": "yes",
-			"2011-04-26": "yes",
-			"2011-04-27": "no",
-			"2011-04-28": "maybe"
+		Poll.parseNaddRow("foo9",{
+			"2011-04-25": "a_yes__",
+			"2011-04-26": "a_yes__",
+			"2011-04-27": "c_no___",
+			"2011-04-28": "b_maybe"
 		});
-	}
-});
+
+}
 

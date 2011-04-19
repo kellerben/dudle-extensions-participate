@@ -19,11 +19,12 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
-require "webservices"
 
 require "cgi"
-$c = CGI.new
+$cgi = CGI.new
 $header = {}
+
+require "webservices"
 
 webservices = {}
 all = []
@@ -35,21 +36,21 @@ Poll.methods.collect{|m|
 	all << webservice
 }
 
-if all.include?($c["service"])
+if all.include?($cgi["service"])
 	$header = {"type" => "text/plain"}
 
-	if $c.include?("pollID") && File.directory?("../../#{$c["pollID"]}/") && $c["pollID"] != ""
+	if $cgi.include?("pollID") && File.directory?("../../#{$cgi["pollID"]}/") && $cgi["pollID"] != ""
 
-		Dir.chdir("../../#{$c["pollID"]}/")
+		Dir.chdir("../../#{$cgi["pollID"]}/")
 		load "../dudle.rb"
 		$d = Dudle.new
 
-		$c.out($header){
-			$d.table.send("webservice_#{$c["service"]}")
+		$cgi.out($header){
+			$d.table.send("webservice_#{$cgi["service"]}")
 		}
 	else
 		$header["status"] = "404 Not Found"
-		$c.out($header){"The requested poll was not found!"}
+		$cgi.out($header){"The requested poll was not found!"}
 	end
 
 else
@@ -100,7 +101,7 @@ webservices.sort.each{|category,ws|
 <table class='settingstable'>
 <tr>
 	<td><label for="#{w}pollID">pollID:</label></td>
-	<td><input id="#{w}pollID" size='16' type='text' name='pollID' value='#{$c["pollID"]}' /></td>
+	<td><input id="#{w}pollID" size='16' type='text' name='pollID' value='#{$cgi["pollID"]}' /></td>
 </tr>
 TITLE
 
@@ -130,7 +131,7 @@ END
 	}
 }
 
-$c.out($header){ 
+$cgi.out($header){ 
 	$out
 }
 
