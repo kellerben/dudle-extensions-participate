@@ -37,6 +37,9 @@ function printf(msg, replaceary) {
 function escapeHtml(s) {
 	return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
+function unescapeHtml(s) {
+	return s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+}
 
 /**********************************************************
  * remove non-standard characters to give a valid html id *

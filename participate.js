@@ -30,7 +30,7 @@ Poll.rmRow = function (name) {
 	var colsSum = {};
 	$.each(Poll.columns, function (i) {
 		var col = Poll.columns[i];
-		if ($("#" + gfHtmlID(name) + "_tr td[title='" + Poll.participantRowTitle(name, col) + "']")[0].classList[0].match(/yes/)) {
+		if ($("#" + gfHtmlID(name) + "_tr td[title='" + unescapeHtml(Poll.participantRowTitle(name, col)) + "']")[0].classList[0].match(/yes/)) {
 			colsSum[col] = -1;
 		} else {
 			colsSum[col] = 0; 
