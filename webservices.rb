@@ -17,6 +17,10 @@
 # along with dudle.  If not, see <http://www.gnu.org/licenses/>.           #
 ############################################################################
 
+def _(a)
+	a
+end
+
 require "pp"
 olddir = Dir.pwd
 Dir.chdir("../../")
