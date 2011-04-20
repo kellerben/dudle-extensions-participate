@@ -61,7 +61,7 @@ else
 	e = Extension.new(".")
 e.add_script("common")
 end
-e.add_lib("jquery")
+e.add_lib("jquery-1.5.2.min")
 e.add_lib("json2")
 
 $d.html.add_script(<<SCRIPT

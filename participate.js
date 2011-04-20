@@ -47,6 +47,7 @@ Poll.addRow = function (name, columns) {
 	$.each(Poll.columns, function (i) {
 		tr += columns[Poll.columns[i]];
 	});
+	tr += "<td class='invisible'></td>";
 	tr += "</tr>";
 	$("#separator_top").before(tr);
 };
@@ -62,8 +63,8 @@ Poll.modifySum = function (columns) {
 		
 
 		colElem.attr({
-			title: Math.round(percentage).toString() + " %",
-			class: "sum match_" + (Math.round(percentage / 10) * 10).toString()
+			'title': Math.round(percentage).toString() + " %",
+			'class': "sum match_" + (Math.round(percentage / 10) * 10).toString()
 		});
 	});
 };
@@ -114,7 +115,7 @@ Poll.getColumns = function (user) {
 	var ret = {};
 	$.each(Poll.columns, function (i) {
 		var col = Poll.columns[i];
-		ret[col] = $("#" + gfHtmlID(escapeHtml(user)) + "_tr td[title='" + unescapeHtml(Poll.participantRowTitle(user, col)) + "']")[0].classList[0];
+		ret[col] = $("#" + gfHtmlID(escapeHtml(user)) + "_tr td[title='" + unescapeHtml(Poll.participantRowTitle(user, col)) + "']").attr("class");
 	});
 	return ret;
 };
