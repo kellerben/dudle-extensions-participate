@@ -94,9 +94,21 @@ function cloneObject(source) {
 		}
 	}
 }
+// clone objects, from:
+// http://my.opera.com/GreyWyvern/blog/show.dml/1725165
+//Object.prototype.clone = function() {
+//  var newObj = (this instanceof Array) ? [] : {};
+//  for (i in this) {
+//    if (i == 'clone') continue;
+//    if (this[i] && typeof this[i] == "object") {
+//      newObj[i] = this[i].clone();
+//    } else newObj[i] = this[i]
+//  } return newObj;
+//};
+
 
 Poll.store = function (extID, key, value) {
-	var successfunc, params = arguments[3] || {};
+	var successfunc, errorfunc, params = arguments[3] || {};
 	params.pollID = Poll.ID;
 	params.extID = extID;
 	params.service = "store";
@@ -107,16 +119,23 @@ Poll.store = function (extID, key, value) {
 		successfunc = params.success;
 		delete params.success;
 	}
+	if (params.error) {
+		errorfunc = params.error;
+		delete params.error;
+	} else {
+		errorfunc =  function(e) { alert("Fehler (" + e.status + ") in Poll.store: " + e.responseText); }
+	}
 	$.ajax({
 		url: Poll.extDir + "/webservices.cgi",
 		data: params,
 		method: "post",
-		success: successfunc
+		success: successfunc,
+		error: errorfunc
 	});
 };
 
 Poll.load = function (extID, key) {
-	var successfunc, params = arguments[2] || {};
+	var successfunc, errorfunc, params = arguments[2] || {};
 	params.pollID = Poll.ID;
 	params.extID = extID;
 	params.service = "load";
@@ -126,10 +145,17 @@ Poll.load = function (extID, key) {
 		successfunc = params.success;
 		delete params.success;
 	}
+	if (params.error) {
+		errorfunc = params.error;
+		delete params.error;
+	} else {
+		errorfunc =  function(e) { alert("Fehler (" + e.status + ") in Poll.load: " + e.responseText); }
+	}
 	$.ajax({
 		url: Poll.extDir + "/webservices.cgi",
 		data: params,
 		method: "get",
-		success: successfunc
+		success: successfunc,
+		error: errorfunc
 	});
 };
