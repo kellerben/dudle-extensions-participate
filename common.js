@@ -140,7 +140,7 @@ Poll.store = function (extID, key, value) {
 	$.ajax({
 		url: Poll.extDir + "/webservices.cgi",
 		data: params,
-		method: "post",
+		type: "POST",
 		success: successfunc,
 		error: errorfunc
 	});
