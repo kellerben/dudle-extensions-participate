@@ -107,6 +107,16 @@ function cloneObject(source) {
 //};
 
 
+/* 
+ * Stores a key=value pair under the namespace extID
+ * value might include
+ * {
+ *   success: successfunc,
+ *   error: errorfunc,
+ *   read_passwd: "some_optional_password",
+ *   write_passwd_old: "some_optional_old_password",
+ *   write_passwd_new: "some_optional_new_password"
+ */
 Poll.store = function (extID, key, value) {
 	var successfunc, errorfunc, params = arguments[3] || {};
 	params.pollID = Poll.ID;
@@ -123,7 +133,9 @@ Poll.store = function (extID, key, value) {
 		errorfunc = params.error;
 		delete params.error;
 	} else {
-		errorfunc =  function(e) { alert("Fehler (" + e.status + ") in Poll.store: " + e.responseText); }
+		errorfunc =  function (e) { 
+			alert("Error (" + e.status + ") in Poll.store: " + e.responseText); 
+		};
 	}
 	$.ajax({
 		url: Poll.extDir + "/webservices.cgi",
@@ -149,7 +161,9 @@ Poll.load = function (extID, key) {
 		errorfunc = params.error;
 		delete params.error;
 	} else {
-		errorfunc =  function(e) { alert("Fehler (" + e.status + ") in Poll.load: " + e.responseText); }
+		errorfunc =  function (e) { 
+			alert("Error (" + e.status + ") in Poll.load: " + e.responseText); 
+		};
 	}
 	$.ajax({
 		url: Poll.extDir + "/webservices.cgi",

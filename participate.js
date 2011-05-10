@@ -120,6 +120,20 @@ Poll.getColumns = function (user) {
 	return ret;
 };
 
+Poll.getParticipantInput = function () {
+	var ret = {},
+		arr = $("#polltable form").serializeArray();
+	ret.oldname = arr[0].value;
+	ret.name = arr[1].value;
+	$.each(arr, function (i, e) {
+		var col = e.name.match(/^add_participant_checked_(.*)$/);
+		if (col) {
+			ret[col[1]] = e.value;
+		}
+	});
+	return ret;
+};
+
 Poll.addSeparartors = function () {
 	$("#add_participant").before($("#separator_top").remove());
 	$("#add_participant").after($("#separator_bottom").remove());
@@ -155,20 +169,30 @@ Poll.editUser = function (user) {
 	Poll.addSeparartors();
 };
 
-Poll.error = function (message) {
-	var rand = Math.round(Math.random() * 10000), tr;
-	tr = "<tr id='error_" + rand + "'><td colspan='" + (Poll.columns.length + 3) + "'>";
-	tr += "<div class='hint'>" + escapeHtml(message) + "</div>";
-	tr += "</td></tr>";
+Poll.addParticipantTR = function (id, tdInnerHtml) {
+	var tr = '<tr id="' + id + '" class="participantrow">';
+	tr += '<td colspan="' + (Poll.columns.length + 3) + '" >' + tdInnerHtml + '</td>';
+	tr += '</tr>';
 	$("#separator_top").before(tr);
+	return $("#" + id);
+};
+
+Poll.hint = function (message, divClass) {
+	var id = "error_" + Math.round(Math.random() * 10000);
+	divClass = divClass || "hint";
+	Poll.addParticipantTR(id, "<div class='" + divClass + "'>" + escapeHtml(message) + "</div>");
 	window.setTimeout(function () {
-		$("#error_" + rand + " div").animate({
+		$("#" + id + " div").animate({
 				opacity: 0,
 				height: 'toggle'
 			}, 500, function () {
-				$("#error_" + rand).remove();
+				$("#" + id).remove();
 			});
 	}, 7000);
+};
+
+Poll.resetForm = function () {
+	$("#polltable form")[0].reset();
 };
 
 
