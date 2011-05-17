@@ -21,13 +21,17 @@ require "json"
 
 class Extension
 	attr_reader :basedir
-	def initialize(basedir)
-		@basedir = basedir + "/extensions/#{$current_ext_dir}"
+	def initialize
+		@basedir = $d.is_poll? ? ".." : "." 
+		@basedir += "/extensions/#{$current_ext_dir}"
 		pofile = "#{@basedir}/locale/#{GetText.locale.language}/dudle.po"
 		if File.exists?(pofile)
 			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{pofile}' />")
 		end
-		add_lib("Gettext")
+
+		if File.exists?("#{@basedir}/common.js")
+			add_script("common")
+		end
 		
 	end
 	def add_lib(jslib)
@@ -39,30 +43,26 @@ class Extension
 	def add_css(file)
 		$d.html.add_css("#{@basedir}/#{file}.css")
 	end
+	def add_script_if_exists(script)
+		add_script(script) if File.exists?("#{@basedir}/#{script}.js")
+	end
+	def load_js
+		if $d.tab == "."
+			if $d.is_poll?
+				add_script_if_exists("participate")
+			else
+				add_script_if_exists("index")
+			end
+		else
+			add_script_if_exists($d.tab.gsub(/\.cgi$/,""))
+		end
+	end
 end
 
-
-if $d.is_poll?
-		e = Extension.new("..")
-		e.add_script("common")
-		$d.html.add_script(<<POLLSPECIFIC
-Poll.ID = '#{$d.urlsuffix}';
-Poll.columns = #{$d.table.head.columns.to_json};
-Poll.Strings.yes   = {symb: '#{YES}',   val: '#{Poll::YESVAL}'};
-Poll.Strings.maybe = {symb: '#{MAYBE}', val: '#{Poll::MAYBEVAL}'};
-Poll.Strings.no    = {symb: '#{NO}',    val: '#{Poll::NOVAL}'};
-Poll.Strings.vals = ["yes", "maybe", "no"];
-for	(var i = 0; i < Poll.Strings.vals.length; i++) {
-	Poll.Strings[Poll.Strings[Poll.Strings.vals[i]].val] = Poll.Strings.vals[i];
-}
-POLLSPECIFIC
-			)
-else
-	e = Extension.new(".")
-e.add_script("common")
-end
+e = Extension.new
 e.add_lib("jquery-1.5.2.min")
 e.add_lib("json2")
+e.add_lib("Gettext")
 
 $d.html.add_script(<<SCRIPT
 Poll.Strings.Edit = '#{EDIT}';
@@ -75,13 +75,17 @@ SCRIPT
 )
 
 if $d.is_poll?
-		e = Extension.new("..")
-		$d.html.add_script("Poll.ID = '#{$d.urlsuffix}';")
-
-		case $d.tab
-		when "." 
-			e.add_script("participate")
-		end
-else
-	e = Extension.new(".")
+		$d.html.add_script(<<POLLSPECIFIC
+Poll.ID = '#{$d.urlsuffix}';
+Poll.columns = #{$d.table.head.columns.to_json};
+Poll.Strings.yes   = {symb: '#{YES}',   val: '#{Poll::YESVAL}'};
+Poll.Strings.maybe = {symb: '#{MAYBE}', val: '#{Poll::MAYBEVAL}'};
+Poll.Strings.no    = {symb: '#{NO}',    val: '#{Poll::NOVAL}'};
+Poll.Strings.vals = ["yes", "maybe", "no"];
+for	(var i = 0; i < Poll.Strings.vals.length; i++) {
+	Poll.Strings[Poll.Strings[Poll.Strings.vals[i]].val] = Poll.Strings.vals[i];
+}
+POLLSPECIFIC
+			)
 end
+e.load_js
