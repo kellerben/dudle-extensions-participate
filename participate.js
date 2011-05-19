@@ -69,6 +69,10 @@ Poll.modifySum = function (columns) {
 	});
 };
 
+Poll.additionalParseNaddFuncts = [];
+Poll.parseNaddHook = function (func) {
+	Poll.additionalParseNaddFuncts.push(func);
+};
 Poll.parseNaddRow = function (name, columns) {
 	var colsHtml = {name: columns.name}, colsSum = {};
 
@@ -98,6 +102,9 @@ Poll.parseNaddRow = function (name, columns) {
 	});
 	Poll.addRow(name, colsHtml);
 	Poll.modifySum(colsSum);
+	$.each(Poll.additionalParseNaddFuncts, function(i,func) {
+		func(name, columns);
+	});
 };
 
 Poll.oldParticipantRow = [];
@@ -113,26 +120,81 @@ Poll.exchangeAddParticipantRow = function (newInnerTR) {
 
 Poll.getColumns = function (user) {
 	var ret = {};
-	$.each(Poll.columns, function (i) {
-		var col = Poll.columns[i];
+	$.each(Poll.columns, function (i, col) {
 		ret[col] = $("#" + gfHtmlID(escapeHtml(user)) + "_tr td[title='" + unescapeHtml(Poll.participantRowTitle(user, col)) + "']").attr("class");
 	});
 	return ret;
 };
 
-Poll.getParticipantInput = function () {
-	var ret = {},
+/*
+ * May be used to add a hook just before the participants input
+ * is given to the send function.
+ * Poll.prepareParticipantInput(function (participantInput, submitfunc) {
+ * 	// do something with participantInput
+ * 	submitfunc();
+ * });
+ *
+ * May include additional code which is executed before the user pressed
+ * the save button.
+ * Poll.prepareParticipantInput(somefunc, {
+ *   before: function () {
+ *     $("#savebutton").value(_("Next));
+ * 	 }
+ * ));
+ */
+Poll.additionalParticipantInputFuncts = [];
+Poll.prepareParticipantInput = function (func) {
+	var options = arguments[1] || {};
+	Poll.additionalParticipantInputFuncts.push([func,options]);
+	if (Poll.additionalParticipantInputFuncts.length === 1 && options.before) {
+		options.before();
+	}
+};
+
+
+Poll.getParticipantInput = function (submitfunc) {
+	var curPrepFunc, userarray = {},
 		arr = $("#polltable form").serializeArray();
-	ret.oldname = arr[0].value;
-	ret.name = arr[1].value;
+	if (arr[0].value !== "") {
+		userarray.oldname = arr[0].value;
+	};
+	userarray.name = arr[1].value;
 	$.each(arr, function (i, e) {
 		var col = e.name.match(/^add_participant_checked_(.*)$/);
 		if (col) {
-			ret[col[1]] = e.value;
+			userarray[col[1]] = e.value;
 		}
 	});
-	return ret;
+
+	curPrepFunc = 0;
+	var prepareParticipantInputRec = function () {
+		if (curPrepFunc === Poll.additionalParticipantInputFuncts.length) {
+			if (submitfunc(userarray)) {
+				$("#polltable form").submit();
+			};
+		} else {
+			curPrepFunc++;
+			Poll.additionalParticipantInputFuncts[curPrepFunc-1][0](userarray,prepareParticipantInputRec);
+			if (curPrepFunc !== Poll.additionalParticipantInputFuncts.length && Poll.additionalParticipantInputFuncts[curPrepFunc][1].before) {
+				Poll.additionalParticipantInputFuncts[curPrepFunc][1].before();
+			}
+		}
+	};
+	prepareParticipantInputRec();
 };
+
+/* 
+ * interrupt send process and bind some function beforewards
+ * submitfunc has to return true/false wether the original submit should 
+ * be done
+ */
+Poll.submitHook = function(submitfunc) {
+	$("#polltable form").bind("submit", function (e) {
+		e.preventDefault();
+		Poll.getParticipantInput(submitfunc);
+	});
+};
+
 
 Poll.addSeparartors = function () {
 	$("#add_participant").before($("#separator_top").remove());
