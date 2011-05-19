@@ -25,7 +25,7 @@ locale/$(DOMAIN).pot: *.js
 	xgettext -L Python *.js -o $@
 
 %.mo: %.po
-	rmsgfmt $*.po -o $*.mo
+	msgfmt $*.po -o $*.mo
 
 locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 	msgmerge $@ $? >/tmp/$(DOMAIN)_$*_tmp.po
@@ -34,8 +34,11 @@ locale/%/$(DOMAIN).po: locale/$(DOMAIN).pot
 	else\
 		touch $@;\
 	fi
-	if [ "`potool -fnt $@ -s`" != "0" -o "`potool -ff $@ -s`" != "0" ];then\
-		poedit $@;\
+	@if [ "`potool -fnt $@ -s`" != "0" -o "`potool -ff $@ -s`" != "0" ];then\
+		echo "WARNING: There are untranslated Strings in $@";\
+		if [ "X:$$DUDLE_POEDIT_AUTO" = "X:$*" ]; then\
+			poedit $@;\
+		fi;\
 	fi
 
 check: $(foreach p,$(wildcard *.js), $p.check)
