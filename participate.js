@@ -74,37 +74,47 @@ Poll.parseNaddHook = function (func) {
 	Poll.additionalParseNaddFuncts.push(func);
 };
 Poll.parseNaddRow = function (name, columns) {
-	var colsHtml = {name: columns.name}, colsSum = {};
-
-	if (columns.editUser && columns.deleteUser) {
-		colsHtml.firstTD = "<span class='edituser'>";
-		colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + name + "\")' title='" + printf(_("Edit User %1 ..."), [name]) + "'>";
-		colsHtml.firstTD += Poll.Strings.Edit + "</a>";
-		colsHtml.firstTD += " | ";
-		colsHtml.firstTD += "<a href='javascript:" + columns.deleteUser + "(\"" + name + "\")' title='" + printf(_("Delete User %1 ..."), [name]) + "'>";
-		colsHtml.firstTD += Poll.Strings.Delete + "</a></span>";
-	}
-
-	$.each(Poll.columns, function (i) {
-		var col = Poll.columns[i],
-		 avail = columns[col],
-		 tdClass, tdText;
-		if (Poll.Strings[avail]) {
-			tdClass = Poll.Strings[Poll.Strings[avail]].val;
-			tdText = Poll.Strings[Poll.Strings[avail]].symb;
+	var colsHtml, colsSum = {}, curPrepFunc = 0;
+	
+	// go recursively through all preparation functions
+	var parseNaddHookRec = function () {
+		if (curPrepFunc < Poll.additionalParseNaddFuncts.length) {
+			curPrepFunc++;
+			Poll.additionalParseNaddFuncts[curPrepFunc-1](name,columns,parseNaddHookRec);
 		} else {
-			tdClass = 'undecided';
-			tdText = Poll.Strings.Unknown;
-		}
+			// we are ready
+			colsHtml = {name: columns.name};
 
-		colsHtml[col] = "<td class='" + tdClass + "' title='" + Poll.participantRowTitle(name, col) + "'>" + tdText + "</td>";
-		colsSum[col] = avail === Poll.Strings.yes.val ? 1 : 0;
-	});
-	Poll.addRow(name, colsHtml);
-	Poll.modifySum(colsSum);
-	$.each(Poll.additionalParseNaddFuncts, function(i,func) {
-		func(name, columns);
-	});
+			if (columns.editUser && columns.deleteUser) {
+				colsHtml.firstTD = "<span class='edituser'>";
+				colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + name + "\")' title='" + printf(_("Edit User %1 ..."), [name]) + "'>";
+				colsHtml.firstTD += Poll.Strings.Edit + "</a>";
+				colsHtml.firstTD += " | ";
+				colsHtml.firstTD += "<a href='javascript:" + columns.deleteUser + "(\"" + name + "\")' title='" + printf(_("Delete User %1 ..."), [name]) + "'>";
+				colsHtml.firstTD += Poll.Strings.Delete + "</a></span>";
+			}
+
+			$.each(Poll.columns, function (i) {
+				var col = Poll.columns[i],
+				 avail = columns[col],
+				 tdClass, tdText;
+				if (Poll.Strings[avail]) {
+					tdClass = Poll.Strings[Poll.Strings[avail]].val;
+					tdText = Poll.Strings[Poll.Strings[avail]].symb;
+				} else {
+					tdClass = 'undecided';
+					tdText = Poll.Strings.Unknown;
+				}
+
+				colsHtml[col] = "<td class='" + tdClass + "' title='" + Poll.participantRowTitle(name, col) + "'>" + tdText + "</td>";
+				colsSum[col] = avail === Poll.Strings.yes.val ? 1 : 0;
+			});
+			Poll.addRow(name, colsHtml);
+			Poll.modifySum(colsSum);
+		}
+	};
+	parseNaddHookRec();
+
 };
 
 Poll.oldParticipantRow = [];
@@ -189,11 +199,13 @@ Poll.getParticipantInput = function (submitfunc) {
  * be done
  */
 Poll.submitHook = function(submitfunc) {
+	Poll.submitIsBound = true;
 	$("#polltable form").bind("submit", function (e) {
 		e.preventDefault();
 		Poll.getParticipantInput(submitfunc);
 	});
 };
+Poll.submitIsBound = false;
 
 
 Poll.addSeparartors = function () {
