@@ -106,6 +106,27 @@ function cloneObject(source) {
 //  } return newObj;
 //};
 
+function gfHasLocalStorage() {
+	return 'localStorage' in window && window['localStorage'] !== null;
+}
+
+function gfStoreLocal(key, val) {
+	if (gfHasLocalStorage()) {
+		localStorage[key] = val;
+		return true;
+	} else {
+		return false;
+	}
+}
+
+function gfGetLocal(key) {
+	if (gfHasLocalStorage()) {
+		return localStorage[key];
+	} else {
+		return undefined;
+	}
+}
+
 
 /* 
  * Stores a key=value pair under the namespace extID

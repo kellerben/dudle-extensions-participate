@@ -74,13 +74,13 @@ Poll.parseNaddHook = function (func) {
 	Poll.additionalParseNaddFuncts.push(func);
 };
 Poll.parseNaddRow = function (name, columns) {
-	var colsHtml, colsSum = {}, curPrepFunc = 0;
+	var colsHtml, colsSum = {}, curPrepFunc = 0, parseNaddHookRec;
 	
 	// go recursively through all preparation functions
-	var parseNaddHookRec = function () {
+	parseNaddHookRec = function () {
 		if (curPrepFunc < Poll.additionalParseNaddFuncts.length) {
 			curPrepFunc++;
-			Poll.additionalParseNaddFuncts[curPrepFunc-1](name,columns,parseNaddHookRec);
+			Poll.additionalParseNaddFuncts[curPrepFunc - 1](name, columns, parseNaddHookRec);
 		} else {
 			// we are ready
 			colsHtml = {name: columns.name};
@@ -140,8 +140,8 @@ Poll.getColumns = function (user) {
  * May be used to add a hook just before the participants input
  * is given to the send function.
  * Poll.prepareParticipantInput(function (participantInput, submitfunc) {
- * 	// do something with participantInput
- * 	submitfunc();
+ *   // do something with participantInput
+ *   submitfunc();
  * });
  *
  * May include additional code which is executed before the user pressed
@@ -149,13 +149,13 @@ Poll.getColumns = function (user) {
  * Poll.prepareParticipantInput(somefunc, {
  *   before: function () {
  *     $("#savebutton").value(_("Next));
- * 	 }
+ *   }
  * ));
  */
 Poll.additionalParticipantInputFuncts = [];
 Poll.prepareParticipantInput = function (func) {
 	var options = arguments[1] || {};
-	Poll.additionalParticipantInputFuncts.push([func,options]);
+	Poll.additionalParticipantInputFuncts.push([func, options]);
 	if (Poll.additionalParticipantInputFuncts.length === 1 && options.before) {
 		options.before();
 	}
@@ -163,11 +163,11 @@ Poll.prepareParticipantInput = function (func) {
 
 
 Poll.getParticipantInput = function (submitfunc) {
-	var curPrepFunc, userarray = {},
+	var curPrepFunc, prepareParticipantInputRec, userarray = {},
 		arr = $("#polltable form").serializeArray();
 	if (arr[0].value !== "") {
 		userarray.oldname = arr[0].value;
-	};
+	}
 	userarray.name = arr[1].value;
 	$.each(arr, function (i, e) {
 		var col = e.name.match(/^add_participant_checked_(.*)$/);
@@ -177,14 +177,14 @@ Poll.getParticipantInput = function (submitfunc) {
 	});
 
 	curPrepFunc = 0;
-	var prepareParticipantInputRec = function () {
+	prepareParticipantInputRec = function () {
 		if (curPrepFunc === Poll.additionalParticipantInputFuncts.length) {
 			if (submitfunc(userarray)) {
 				$("#polltable form").submit();
-			};
+			}
 		} else {
 			curPrepFunc++;
-			Poll.additionalParticipantInputFuncts[curPrepFunc-1][0](userarray,prepareParticipantInputRec);
+			Poll.additionalParticipantInputFuncts[curPrepFunc - 1][0](userarray, prepareParticipantInputRec);
 			if (curPrepFunc !== Poll.additionalParticipantInputFuncts.length && Poll.additionalParticipantInputFuncts[curPrepFunc][1].before) {
 				Poll.additionalParticipantInputFuncts[curPrepFunc][1].before();
 			}
@@ -198,7 +198,7 @@ Poll.getParticipantInput = function (submitfunc) {
  * submitfunc has to return true/false wether the original submit should 
  * be done
  */
-Poll.submitHook = function(submitfunc) {
+Poll.submitHook = function (submitfunc) {
 	Poll.submitIsBound = true;
 	$("#polltable form").bind("submit", function (e) {
 		e.preventDefault();
