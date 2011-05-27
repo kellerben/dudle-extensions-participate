@@ -112,8 +112,9 @@ Poll.parseNaddRow = function (name, columns) {
 				colsSum[col] = avail === Poll.Strings.yes.val ? 1 : 0;
 			});
 
-			console.log(columns);
-			colsHtml.lastTD = columns.time.toString(Date.CultureInfo.formatPatterns.fullDateTime);
+			if (columns.time) {
+				colsHtml.lastTD = columns.time.toString(Date.CultureInfo.formatPatterns.fullDateTime);
+			}
 			Poll.addRow(name, colsHtml);
 			Poll.modifySum(colsSum);
 		}
