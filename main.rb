@@ -61,6 +61,7 @@ end
 
 e = Extension.new
 e.add_lib("jquery-1.5.2.min")
+e.add_lib("jquery.tablesorter.min")
 e.add_lib("json2")
 e.add_lib("Gettext")
 
@@ -82,7 +83,30 @@ else
 end
 
 
+$d.html.add_html_head(<<CSS
+<style type="text/css">
+<!--
+th.headerSortUp:after { 
+	content: "#{SORT}";
+} 
+th.headerSortDown:after { 
+	content: "#{REVERSESORT}";
+}
+th.header { 
+	cursor: pointer; 
+}
+th[class=header]:after {
+	content: "#{NOSORT}";
+}
+-->
+</style>
+CSS
+)
+
 $d.html.add_script(<<SCRIPT
+Poll.Strings.SortDown = '#{SORT}';
+Poll.Strings.SortUp = '#{REVERSESORT}';
+Poll.Strings.NoSort = '#{NOSORT}';
 Poll.Strings.Edit = '#{EDIT}';
 Poll.Strings.Delete = '#{DELETE}';
 Poll.Strings.Unknown = '#{UNKNOWN}';

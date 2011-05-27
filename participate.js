@@ -29,7 +29,7 @@ Poll.rmRow = function (name) {
 	}
 	var colsSum = {};
 	$.each(Poll.getColumns(name), function (col, htmlclass) {
-		colsSum[col] = htmlclass.match(/yes/) ? -1 : 0; 
+		colsSum[col] = htmlclass.match(/yes/) ? -1 : 0;
 	});
 
 	Poll.modifySum(colsSum);
@@ -51,7 +51,13 @@ Poll.addRow = function (name, columns) {
 	tr += columns.lastTD || "";
 	tr += "</td>";
 	tr += "</tr>";
-	$("#separator_top").before(tr);
+	$("#participants").append(tr);
+
+	$("#participanttable").trigger("update");
+	window.setTimeout(function () {
+		// does not work without setTimeout
+		$("#participanttable").trigger("sorton", [$("#participanttable").data().tablesorter.sortList]);
+	});
 };
 
 Poll.modifySum = function (columns) {
@@ -199,9 +205,9 @@ Poll.getParticipantInput = function (submitfunc) {
 	prepareParticipantInputRec();
 };
 
-/* 
+/*
  * interrupt send process and bind some function beforewards
- * submitfunc has to return true/false wether the original submit should 
+ * submitfunc has to return true/false wether the original submit should
  * be done
  */
 Poll.submitHook = function (submitfunc) {
@@ -275,6 +281,64 @@ Poll.resetForm = function () {
 	$("#polltable form")[0].reset();
 };
 
+$(document).ready(function () {
+	$(".sortsymb").remove();
+	// tablesorter seems to have a bug if the first th has colspan
+	$("#participanttable thead").prepend("<tr class='invisible'><th></th></tr>");
+	$.tablesorter.addParser({
+		id: 'participants',
+		is: function (s) {
+			return false;
+		},
+		format: function () {
+			return $.trim($(arguments[2].parentElement.children[1]).text().toLocaleLowerCase());
+		},
+		type: 'text'
+	});
+	$.tablesorter.addParser({
+		id: 'YesMaybeNo',
+		is: function (s) {
+			return false; 
+		},
+		format: function (s) {
+			var ret = -1;
+			$.each(Poll.Strings.vals, function (i, val) {
+				if (s === $("<td>" + Poll.Strings[val].symb + "</td>").text()) {
+					ret = i;
+				}
+			});
+			return ret;
+		},
+		type: 'numeric'
+	});
+	$.tablesorter.addParser({
+		id: 'DateSorter',
+		is: function (s) {
+			return false;
+		},
+		format: function (s) {
+			var d;
+			d = Date.parse(s);
+			if (!d) {
+				d = new Date(s);
+			}
+			return $.tablesorter.formatFloat(d.getTime());
+		},
+		type: 'numeric'
+	});
+
+	var ths = {};
+	ths[0] = { sorter: 'participants' };
+//  ths[1] = { sorter: 'participants' };
+	ths[Poll.columns.length + 2] = {sorter: 'DateSorter'};
+	$.each(Poll.columns, function (i) {
+		ths[i + 2] = { sorter: 'YesMaybeNo' };
+	});
+	$("#participanttable").tablesorter({
+		sortList: [[Poll.columns.length + 2, 0]],
+		headers: ths
+	});
+});
 
 //$.ajax({
 //  url: Poll.extDir + "/webservices.cgi",
