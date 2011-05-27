@@ -190,7 +190,15 @@ Poll.load = function (extID, key) {
 		url: Poll.extDir + "/webservices.cgi",
 		data: params,
 		method: "get",
-		success: successfunc,
+		success: function (resp) {
+			if (params.type === "json") {
+				var r = JSON.parse(resp);
+				r.time = new Date(r.time);
+				successfunc(r);
+			} else {
+				successfunc(resp);
+			}
+		},
 		error: errorfunc
 	});
 };

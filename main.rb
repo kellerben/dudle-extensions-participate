@@ -64,6 +64,24 @@ e.add_lib("jquery-1.5.2.min")
 e.add_lib("json2")
 e.add_lib("Gettext")
 
+locale = GetText.locale.to_s
+locale = "#{locale}-#{locale.upcase}" if locale =~ /../
+datelib = "datejs/date-#{locale.gsub("_","-")}"
+if File.exists?("#{e.basedir}/lib/#{datelib}.js")
+	e.add_lib(datelib)
+else
+	locale.gsub!(/-../,"")
+	try = Dir.new("#{e.basedir}/lib/datejs").to_a.collect{|f|
+		f =~ /date-#{locale}-..\.js/ ? f : nil 
+	}.compact.first
+	if try
+		e.add_lib("datejs/#{try.gsub(/\.js$/,"")}")
+	else
+		e.add_lib("datejs/date")
+	end
+end
+
+
 $d.html.add_script(<<SCRIPT
 Poll.Strings.Edit = '#{EDIT}';
 Poll.Strings.Delete = '#{DELETE}';

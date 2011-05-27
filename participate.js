@@ -47,7 +47,9 @@ Poll.addRow = function (name, columns) {
 	$.each(Poll.columns, function (i) {
 		tr += columns[Poll.columns[i]];
 	});
-	tr += "<td class='invisible'></td>";
+	tr += "<td class='date'>";
+	tr += columns.lastTD || "";
+	tr += "</td>";
 	tr += "</tr>";
 	$("#separator_top").before(tr);
 };
@@ -109,6 +111,9 @@ Poll.parseNaddRow = function (name, columns) {
 				colsHtml[col] = "<td class='" + tdClass + "' title='" + Poll.participantRowTitle(name, col) + "'>" + tdText + "</td>";
 				colsSum[col] = avail === Poll.Strings.yes.val ? 1 : 0;
 			});
+
+			console.log(columns);
+			colsHtml.lastTD = columns.time.toString(Date.CultureInfo.formatPatterns.fullDateTime);
 			Poll.addRow(name, colsHtml);
 			Poll.modifySum(colsSum);
 		}

@@ -52,12 +52,13 @@ class Poll
 		@extensiondata ||= {}
 		@extensiondata[$cgi["extID"]] ||= {}
 		@extensiondata[$cgi["extID"]][$cgi["key"]] ||= {}
-
+ 
 
 		if !@extensiondata[$cgi["extID"]][$cgi["key"]][:write_pw] || @extensiondata[$cgi["extID"]][$cgi["key"]][:write_pw] == $cgi["write_passwd_old"]
 			@extensiondata[$cgi["extID"]][$cgi["key"]][:val] = $cgi["value"]
 			@extensiondata[$cgi["extID"]][$cgi["key"]][:write_pw] = $cgi["write_passwd_new"]
 			@extensiondata[$cgi["extID"]][$cgi["key"]][:read_pw] = $cgi["read_passwd"]
+			@extensiondata[$cgi["extID"]][$cgi["key"]][:time] = Time.now
 			store "Added data for #{$cgi["extID"]}"
 		else
 			$header["status"] = CGI::HTTP_STATUS[403]
@@ -65,9 +66,10 @@ class Poll
 		end
 	end
 	def Poll.webservicedescription_2Pollmodification_load
-		{ "return" => '"data OR HTTP404 OR HTTP403"',
-			"input" => ["extID", "key", "read_passwd"],
-			"read_passwd" => "password to read (optional)",
+		{ "return" => '"data OR HTTP404 OR HTTP403. If type==json, then data := {time:stored_time, data:data}"',
+			"input" => ["extID", "key", "type", "read_passwd"],
+			"read_passwd" => "Optional: password to read",
+			"type" => "Optional: plain (default) or json",
 			"extID" => "some Identifier, for the extension",
 #       "value" => "json string"
 		}
@@ -86,7 +88,11 @@ class Poll
 			error
 		else
 			if @extensiondata[$cgi["extID"]][$cgi["key"]][:read_pw] == $cgi["read_passwd"]
-				@extensiondata[$cgi["extID"]][$cgi["key"]][:val]
+				if $cgi["type"] == "json"
+					{:time => @extensiondata[$cgi["extID"]][$cgi["key"]][:time], :data => @extensiondata[$cgi["extID"]][$cgi["key"]][:val]}.to_json
+				else
+					@extensiondata[$cgi["extID"]][$cgi["key"]][:val]
+				end
 			else
 				$header["status"] = CGI::HTTP_STATUS[403]
 				"You are not allowed to read this!"
