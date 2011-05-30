@@ -90,6 +90,7 @@ class Poll
 		else
 			if @extensiondata[$cgi["extID"]][$cgi["key"]][:read_pw] == $cgi["read_passwd"]
 				if $cgi["type"] == "json"
+					@extensiondata[$cgi["extID"]][$cgi["key"]][:time] ||= Time.parse("1970-01-01") # might be nil -> backward compatibility
 					{:time => @extensiondata[$cgi["extID"]][$cgi["key"]][:time].rfc2822, :data => @extensiondata[$cgi["extID"]][$cgi["key"]][:val]}.to_json
 				else
 					@extensiondata[$cgi["extID"]][$cgi["key"]][:val]
