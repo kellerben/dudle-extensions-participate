@@ -32,7 +32,7 @@ Poll.rmRow = function (name) {
 		colsSum[col] = htmlclass.match(/yes/) ? -1 : 0;
 	});
 
-	Poll.modifySum(colsSum);
+	Poll.updateSum();
 	$("#" + gfHtmlID(escapeHtml(name)) + "_tr").remove();
 };
 
@@ -71,6 +71,48 @@ Poll.modifySum = function (columns) {
 
 		colElem.attr({
 			'title': Math.round(percentage).toString() + " %",
+			'class': "sum match_" + (Math.round(percentage / 10) * 10).toString()
+		});
+	});
+};
+
+Poll.updateSum = function () {
+	var sum = {total: $("#participants tr").length};
+	$.each(Poll.columns, function (colI, col) {
+		sum[col] = {};
+		$.each(Poll.Strings.vals, function (i, val) {
+			sum[col][val] = 0;
+		});
+		$.each($("#participants tr"), function (pI, p) {
+			var user = $(p).find("td.name").text(),
+				cur = $(p).find("[title='" + user + ": " + col + "']").text();
+			$.each(Poll.Strings.vals, function (i, val) {
+				if (Poll.Strings[val].parsedSymb === cur) {
+					sum[col][val] += 1;
+				}
+			});
+		});
+		sum[col].unknown = sum.total - sum[col].yes - sum[col].no - sum[col].maybe;
+
+		var colElem = $("#" + gfHtmlID("sum_" + col)),
+			newSum = sum[col].yes, title = "",
+			undecided = sum[col].maybe + sum[col].unknown,
+			percentage = newSum * 100 / sum.total;
+
+		colElem.text(newSum);
+
+		if (undecided !== 0) {
+			title += "(+" + (undecided) + "?) ";
+		}
+
+		title += Math.round(percentage).toString() + "%";
+
+		if (undecided !== 0) {
+			title += "-" + Math.round((undecided + newSum) * 100 / sum.total).toString() + "%";
+		}
+
+		colElem.attr({
+			'title': title,
 			'class': "sum match_" + (Math.round(percentage / 10) * 10).toString()
 		});
 	});
@@ -120,7 +162,7 @@ Poll.parseNaddRow = function (name, columns) {
 				colsHtml.lastTD = columns.time.toString(Date.CultureInfo.formatPatterns.fullDateTime);
 			}
 			Poll.addRow(name, colsHtml);
-			Poll.modifySum(colsSum);
+			Poll.updateSum();
 		}
 	};
 	parseNaddHookRec();
