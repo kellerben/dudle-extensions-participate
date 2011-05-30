@@ -56,15 +56,18 @@ Poll.addRow = function (name, columns) {
 	Poll.sort();
 };
 
+/**
+ * Updates the Sum with the specified +- values
+ * columns is an Object, usually containing
+ * elements in {-1,0,1} for each column
+ */
 Poll.modifySum = function (columns) {
-	$.each(Poll.columns, function (i) {
-		var col = Poll.columns[i],
-			colElem = $("#" + gfHtmlID("sum_" + col)),
+	$.each(Poll.columns, function (i, col) {
+		var colElem = $("#" + gfHtmlID("sum_" + col)),
 			newSum = parseInt(colElem.text(), 10) + columns[col],
 			percentage = newSum * 100 / $(".participantrow").size();
 
 		colElem.text(newSum);
-		
 
 		colElem.attr({
 			'title': Math.round(percentage).toString() + " %",
@@ -98,9 +101,8 @@ Poll.parseNaddRow = function (name, columns) {
 				colsHtml.firstTD += Poll.Strings.Delete + "</a></span>";
 			}
 
-			$.each(Poll.columns, function (i) {
-				var col = Poll.columns[i],
-				 avail = columns[col],
+			$.each(Poll.columns, function (i, col) {
+				var avail = columns[col],
 				 tdClass, tdText;
 				if (Poll.Strings[avail]) {
 					tdClass = Poll.Strings[Poll.Strings[avail]].val;
