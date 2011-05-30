@@ -61,7 +61,6 @@ end
 
 e = Extension.new
 e.add_lib("jquery-1.5.2.min")
-e.add_lib("jquery.tablesorter.min")
 e.add_lib("json2")
 e.add_lib("Gettext")
 
@@ -86,16 +85,13 @@ end
 $d.html.add_html_head(<<CSS
 <style type="text/css">
 <!--
-th.headerSortUp:after { 
+.headerSort:after { 
 	content: "#{SORT}";
 } 
-th.headerSortDown:after { 
+.headerSortReverse:after { 
 	content: "#{REVERSESORT}";
 }
-th.header { 
-	cursor: pointer; 
-}
-th[class=header]:after {
+[class=header]:after {
 	content: "#{NOSORT}";
 }
 -->

@@ -53,11 +53,7 @@ Poll.addRow = function (name, columns) {
 	tr += "</tr>";
 	$("#participants").append(tr);
 
-	$("#participanttable").trigger("update");
-	window.setTimeout(function () {
-		// does not work without setTimeout
-		$("#participanttable").trigger("sorton", [$("#participanttable").data().tablesorter.sortList]);
-	});
+	Poll.sort();
 };
 
 Poll.modifySum = function (columns) {
@@ -281,73 +277,80 @@ Poll.resetForm = function () {
 	$("#polltable form")[0].reset();
 };
 
+
+var lastSortCol = Poll.columns.length + 2;
+Poll.sort = function (sortCol) {
+	var to_comp, trAry, reverse = false;
+
+	if (typeof(sortCol) === 'undefined') {
+		sortCol = lastSortCol;
+	} else {
+		if (sortCol === lastSortCol) {
+			if ($($(".header")[sortCol]).hasClass("headerSort")) {
+				reverse = true;
+			} 
+		}
+		lastSortCol =  sortCol;
+	}
+
+	to_comp = (function () {
+		switch (sortCol) {
+		case 0: // Name
+			return function (s) {
+				return s.toUpperCase();
+			};
+		case Poll.columns.length + 1: // Last Change
+			return function (date) {
+				var d = Date.parse(date);
+				if (!d) {
+					d = new Date(date);
+				}
+				return d.getTime();
+			};
+		default:
+			return function (s) {
+				var ret = -1;
+				$.each(Poll.Strings.vals, function (i, val) {
+					if (s === $("<td>" + Poll.Strings[val].symb + "</td>").text()) {
+						ret = i;
+					}
+				});
+				return ret;
+			};
+		}
+	}());
+
+	trAry = $("#participanttable tr.participantrow").sort(function (a, b) {
+		var valA, valB;
+		valA = to_comp($($(a).find("td")[sortCol + 1]).text());
+		valB = to_comp($($(b).find("td")[sortCol + 1]).text());
+		return (valA < valB) ? -1 : (valA > valB) ? 1 : 0;
+	}).toArray();
+	$(".headerSort").removeClass("headerSort");
+	$(".headerSortReverse").removeClass("headerSortReverse");
+	if (reverse) {
+		$($("#participanttable th a")[sortCol]).addClass("headerSortReverse");
+		trAry.reverse();
+	} else {
+		$($("#participanttable th a")[sortCol]).addClass("headerSort");
+	}
+
+	$("#participanttable tr.participantrow").remove();
+	$("tbody#participants").append(trAry);
+};
+
 $(document).ready(function () {
 	$(".sortsymb").remove();
-	// tablesorter seems to have a bug if the first th has colspan
-	$("#participanttable thead").prepend("<tr class='invisible'><th></th></tr>");
-	$.tablesorter.addParser({
-		id: 'participants',
-		is: function (s) {
+	$.each($("#participanttable th a"), function (i, col) {
+		$(col).click(function () {
+			Poll.sort(i);
 			return false;
-		},
-		format: function () {
-			return $.trim($(arguments[2].parentElement.children[1]).text().toLocaleLowerCase());
-		},
-		type: 'text'
+		});
 	});
-	$.tablesorter.addParser({
-		id: 'YesMaybeNo',
-		is: function (s) {
-			return false; 
-		},
-		format: function (s) {
-			var ret = -1;
-			$.each(Poll.Strings.vals, function (i, val) {
-				if (s === $("<td>" + Poll.Strings[val].symb + "</td>").text()) {
-					ret = i;
-				}
-			});
-			return ret;
-		},
-		type: 'numeric'
-	});
-	$.tablesorter.addParser({
-		id: 'DateSorter',
-		is: function (s) {
-			return false;
-		},
-		format: function (s) {
-			var d;
-			d = Date.parse(s);
-			if (!d) {
-				d = new Date(s);
-			}
-			return $.tablesorter.formatFloat(d.getTime());
-		},
-		type: 'numeric'
-	});
+	$("#participanttable th a").addClass("header");
+	Poll.sort(Poll.columns.length + 1);
 
-	var ths = {};
-	ths[0] = { sorter: 'participants' };
-//  ths[1] = { sorter: 'participants' };
-	ths[Poll.columns.length + 2] = {sorter: 'DateSorter'};
-	$.each(Poll.columns, function (i) {
-		ths[i + 2] = { sorter: 'YesMaybeNo' };
-	});
-	$("#participanttable").tablesorter({
-		sortList: [[Poll.columns.length + 2, 0]],
-		headers: ths
-	});
 });
-
-//$.ajax({
-//  url: Poll.extDir + "/webservices.cgi",
-//  data: {service: 'getColumns', pollID: Poll.ID},
-//  method:"get",
-//  success:function (response){
-//    Poll.columns = JSON.parse(response);
-//  }
-//});
 
 //window.setTimeout(test, 3);
 
