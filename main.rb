@@ -120,9 +120,10 @@ Poll.Strings.yes   = {symb: '#{YES}',   val: '#{Poll::YESVAL}'};
 Poll.Strings.maybe = {symb: '#{MAYBE}', val: '#{Poll::MAYBEVAL}'};
 Poll.Strings.no    = {symb: '#{NO}',    val: '#{Poll::NOVAL}'};
 Poll.Strings.vals = ["yes", "maybe", "no"];
-for	(var i = 0; i < Poll.Strings.vals.length; i++) {
-	Poll.Strings[Poll.Strings[Poll.Strings.vals[i]].val] = Poll.Strings.vals[i];
-}
+$.each(Poll.Strings.vals, function(i, elem) {
+	Poll.Strings[Poll.Strings[elem].val] = elem;
+	Poll.Strings[elem].parsedSymb = $("<td>" + Poll.Strings[elem].symb + "</td>").text();
+});
 POLLSPECIFIC
 			)
 end

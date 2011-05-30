@@ -311,9 +311,9 @@ Poll.sort = function (sortCol) {
 			};
 		default:
 			return function (s) {
-				var ret = -1;
+				var ret = 1.5; // value for unknown
 				$.each(Poll.Strings.vals, function (i, val) {
-					if (s === $("<td>" + Poll.Strings[val].symb + "</td>").text()) {
+					if (s === Poll.Strings[val].parsedSymb) {
 						ret = i;
 					}
 				});
