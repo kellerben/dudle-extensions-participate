@@ -29,6 +29,7 @@ Dir.chdir(olddir)
 
 require "cgistatus"
 require "json"
+require "time"
 
 class Poll
 	def Poll.webservicedescription_1Polldetails_getColumns
@@ -89,7 +90,7 @@ class Poll
 		else
 			if @extensiondata[$cgi["extID"]][$cgi["key"]][:read_pw] == $cgi["read_passwd"]
 				if $cgi["type"] == "json"
-					{:time => @extensiondata[$cgi["extID"]][$cgi["key"]][:time], :data => @extensiondata[$cgi["extID"]][$cgi["key"]][:val]}.to_json
+					{:time => @extensiondata[$cgi["extID"]][$cgi["key"]][:time].rfc2822, :data => @extensiondata[$cgi["extID"]][$cgi["key"]][:val]}.to_json
 				else
 					@extensiondata[$cgi["extID"]][$cgi["key"]][:val]
 				end

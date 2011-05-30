@@ -64,9 +64,9 @@ e.add_lib("jquery-1.5.2.min")
 e.add_lib("json2")
 e.add_lib("Gettext")
 
-locale = GetText.locale.to_s
-locale = "#{locale}-#{locale.upcase}" if locale =~ /../
-datelib = "datejs/date-#{locale.gsub("_","-")}"
+locale = GetText.locale.to_s.gsub("_","-")
+locale = "#{locale}-#{locale.upcase}" if locale =~ /^..$/
+datelib = "datejs/date-#{locale}"
 if File.exists?("#{e.basedir}/lib/#{datelib}.js")
 	e.add_lib(datelib)
 else
