@@ -28,8 +28,8 @@ Poll.rmRow = function (name) {
 		throw "There is no User named: " + name + "!";
 	}
 
-	Poll.updateSum();
 	$("#" + gfHtmlID(escapeHtml(name)) + "_tr").remove();
+	Poll.updateSum();
 };
 
 Poll.addRow = function (name, columns) {
