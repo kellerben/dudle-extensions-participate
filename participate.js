@@ -27,10 +27,6 @@ Poll.rmRow = function (name) {
 	if ($("#" + gfHtmlID(escapeHtml(name)) + "_tr").length === 0) {
 		throw "There is no User named: " + name + "!";
 	}
-	var colsSum = {};
-	$.each(Poll.getColumns(name), function (col, htmlclass) {
-		colsSum[col] = htmlclass.match(/yes/) ? -1 : 0;
-	});
 
 	Poll.updateSum();
 	$("#" + gfHtmlID(escapeHtml(name)) + "_tr").remove();
@@ -172,8 +168,7 @@ Poll.parseNaddRow = function (name, columns) {
 Poll.oldParticipantRow = [];
 Poll.exchangeAddParticipantRow = function (newInnerTR) {
 	if (typeof(newInnerTR) === 'undefined') {
-		$("#add_participant").replaceWith(Poll.oldParticipantRow[0].clone());
-		Poll.oldParticipantRow = [];
+		$("#add_participant").replaceWith(Poll.oldParticipantRow.pop().clone());
 	} else {
 		Poll.oldParticipantRow.push($("#add_participant"));
 		$("#add_participant").replaceWith("<tr id='add_participant'>" + newInnerTR + "</tr>");
@@ -267,15 +262,17 @@ Poll.addSeparartors = function () {
 
 Poll.cancelEdit = function () {
 	$("#add_participant").replaceWith(Poll.currentEditUser);
-	Poll.currentEditUser = "";
-	$("#summary").before(Poll.oldParticipantRow[0].clone());
-	Poll.oldParticipantRow = [];
+	delete Poll.currentEditUser;
+	$("#summary").before(Poll.oldParticipantRow.pop().clone());
 	Poll.addSeparartors();
 };
 
-Poll.currentEditUser = "";
+/**
+ * exchanges the Users row with the participate-row
+ * stores old userrow in Poll.currentEditUser
+ */
 Poll.editUser = function (user) {
-	if (Poll.currentEditUser !== "") {
+	if (Poll.currentEditUser) {
 		Poll.cancelEdit();
 	}
 
@@ -284,12 +281,12 @@ Poll.editUser = function (user) {
 	$("#add_participant").remove();
 	var usercols = Poll.getColumns(user);
 	Poll.currentEditUser = $("#" + gfHtmlID(escapeHtml(user)) + "_tr");
-	$("#" + gfHtmlID(escapeHtml(user)) + "_tr").replaceWith(Poll.oldParticipantRow[0].clone());
+	$("#" + gfHtmlID(escapeHtml(user)) + "_tr").replaceWith($(Poll.oldParticipantRow).last()[0].clone());
 	$.each(usercols, function (col, htmlclass) {
 		$("#add_participant_checked_" + gfHtmlID(col) + "_" + htmlclass).click();
 	});
-	$("#add_participant_input")[0].value = user;
-	$("#add_participant_input_td input[name='olduser']")[0].value = user;
+	$("#add_participant_input").val(user);
+	$("#add_participant_input_td input[name='olduser']").val(user);
 	$("#savebutton").after("<br /><input type='button' value='" + _("Cancel") + "' onclick='Poll.cancelEdit()'/>");
 
 	Poll.addSeparartors();
