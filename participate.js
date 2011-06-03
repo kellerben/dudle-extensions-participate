@@ -32,12 +32,14 @@ Poll.rmRow = function (name) {
 	Poll.updateSum();
 };
 
-Poll.addRow = function (name, columns) {
-	var tr = "<tr class='participantrow' id='" + gfHtmlID(name) + "_tr'><td>";
+Poll.addRow = function (columns) {
+	var tr = "<tr class='participantrow' id='" + columns.id + "_tr'><td>";
 	tr += columns.firstTD || "";
 	tr += "</td>";
 	tr += "<td class='name'>";
+	tr += columns.before_name || "";
 	tr += columns.name || "";
+	tr += columns.after_name || "";
 	tr += "</td>";
 
 	$.each(Poll.columns, function (i) {
@@ -118,24 +120,30 @@ Poll.additionalParseNaddFuncts = [];
 Poll.parseNaddHook = function (func) {
 	Poll.additionalParseNaddFuncts.push(func);
 };
-Poll.parseNaddRow = function (name, columns) {
+Poll.parseNaddRow = function (columns) {
 	var colsHtml, colsSum = {}, curPrepFunc = 0, parseNaddHookRec;
+	columns.id = gfHtmlID(escapeHtml(columns.name));
 	
 	// go recursively through all preparation functions
 	parseNaddHookRec = function () {
 		if (curPrepFunc < Poll.additionalParseNaddFuncts.length) {
 			curPrepFunc++;
-			Poll.additionalParseNaddFuncts[curPrepFunc - 1](name, columns, parseNaddHookRec);
+			Poll.additionalParseNaddFuncts[curPrepFunc - 1](columns, parseNaddHookRec);
 		} else {
 			// we are ready
-			colsHtml = {name: columns.name};
+			colsHtml = {
+				name: columns.name, 
+				before_name: columns.before_name,
+				after_name: columns.after_name,
+				id: columns.id
+			};
 
 			if (columns.editUser && columns.deleteUser) {
 				colsHtml.firstTD = "<span class='edituser'>";
-				colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + name + "\")' title='" + printf(_("Edit User %1 ..."), [name]) + "'>";
+				colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + columns.id + "\")' title='" + printf(_("Edit User %1 ..."), [columns.name]) + "'>";
 				colsHtml.firstTD += Poll.Strings.Edit + "</a>";
 				colsHtml.firstTD += " | ";
-				colsHtml.firstTD += "<a href='javascript:" + columns.deleteUser + "(\"" + name + "\")' title='" + printf(_("Delete User %1 ..."), [name]) + "'>";
+				colsHtml.firstTD += "<a href='javascript:" + columns.deleteUser + "(\"" + columns.id + "\")' title='" + printf(_("Delete User %1 ..."), [columns.name]) + "'>";
 				colsHtml.firstTD += Poll.Strings.Delete + "</a></span>";
 			}
 
@@ -150,14 +158,14 @@ Poll.parseNaddRow = function (name, columns) {
 					tdText = Poll.Strings.Unknown;
 				}
 
-				colsHtml[col] = "<td class='" + tdClass + "' title='" + Poll.participantRowTitle(name, col) + "'>" + tdText + "</td>";
+				colsHtml[col] = "<td class='" + tdClass + "' title='" + Poll.participantRowTitle(columns.name, col) + "'>" + tdText + "</td>";
 				colsSum[col] = avail === Poll.Strings.yes.val ? 1 : 0;
 			});
 
 			if (columns.time) {
 				colsHtml.lastTD = columns.time.toString(Date.CultureInfo.formatPatterns.fullDateTime);
 			}
-			Poll.addRow(name, colsHtml);
+			Poll.addRow(colsHtml);
 			Poll.updateSum();
 		}
 	};
@@ -397,7 +405,8 @@ $(document).ready(function () {
 
 function test() {	// test
 	var username = "peter";
-	Poll.addRow(username, {
+	Poll.addRow({
+		id: username,
 		firstTD: "<span class='edituser'><a href='#editUser' username='" + username + "' title='" + printf(_("Edit User %1 ..."), [username]) + "'>" + Poll.Strings.Edit + "</a> | <a href='#deleteUser' username='" + username + "title='" + printf(_("Delete User %1 ..."), [username]) + "'>" + Poll.Strings.Delete + "</a></span>",
 		name: "foobarbaz",
 		"2011-04-25": "<td>a</td>",
@@ -406,19 +415,22 @@ function test() {	// test
 		"2011-04-27": "<td>c</td>"
 	});
 
-	Poll.parseNaddRow("foo2", {
+	Poll.parseNaddRow({
+		name: "foo2", 
 		"2011-04-25": "a_yes__",
 		"2011-04-26": "a_yes__",
 		"2011-04-27": "c_no___",
 		"2011-04-28": "b_maybe"
 	});
-	Poll.parseNaddRow("foo1", {
+	Poll.parseNaddRow({
+		name: "foo1", 
 		"2011-04-25": "a_yes__",
 		"2011-04-26": "a_yes__",
 		"2011-04-27": "c_no___",
 		"2011-04-28": "b_maybe"
 	});
-	Poll.parseNaddRow("foo9", {
+	Poll.parseNaddRow({
+		name: "foo9", 
 		"2011-04-25": "a_yes__",
 		"2011-04-26": "a_yes__",
 		"2011-04-27": "c_no___",
