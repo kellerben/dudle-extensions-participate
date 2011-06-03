@@ -140,7 +140,7 @@ Poll.parseNaddRow = function (columns) {
 
 			if (columns.editUser && columns.deleteUser) {
 				colsHtml.firstTD = "<span class='edituser'>";
-				colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + columns.id + "\")' title='" + printf(_("Edit User %1 ..."), [columns.name]) + "'>";
+				colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + escapeHtml(escape(columns.name)) + "\")' title='" + printf(_("Edit User %1 ..."), [columns.name]) + "'>";
 				colsHtml.firstTD += Poll.Strings.Edit + "</a>";
 				colsHtml.firstTD += " | ";
 				colsHtml.firstTD += "<a href='javascript:" + columns.deleteUser + "(\"" + columns.id + "\")' title='" + printf(_("Delete User %1 ..."), [columns.name]) + "'>";
