@@ -43,7 +43,13 @@ if all.include?($cgi["service"])
 
 		Dir.chdir("../../#{$cgi["pollID"]}/")
 		load "../dudle.rb"
-		$d = Dudle.new
+
+		if $cgi["service"] == "load" && $cgi.include?("revision")
+			revno=$cgi["revision"].to_i
+			$d = Dudle.new(:revision => revno)
+		else
+			$d = Dudle.new
+		end
 
 		$cgi.out($header){
 			$d.table.send("webservice_#{$cgi["service"]}")

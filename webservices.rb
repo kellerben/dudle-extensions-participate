@@ -68,7 +68,8 @@ class Poll
 	end
 	def Poll.webservicedescription_2Pollmodification_load
 		{ "return" => '"data OR HTTP404 OR HTTP403. If type==json, then data := {time:stored_time, data:data}"',
-			"input" => ["extID", "key", "type", "read_passwd"],
+			"input" => ["extID", "key", "type", "read_passwd", "revision"],
+			"revision" => "Optional: revision number to load",
 			"read_passwd" => "Optional: password to read",
 			"type" => "Optional: plain (default) or json",
 			"extID" => "some Identifier, for the extension",
