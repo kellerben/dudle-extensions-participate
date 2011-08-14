@@ -131,16 +131,19 @@ Poll.cancelEdit = function () {
 	Poll.addSeparartors();
 };
 
+Poll.cancelPossibleEdit = function () {
+	if (Poll.currentEditUser) {
+		Poll.cancelEdit();
+	}
+	Poll.oldParticipantRow.push($("#add_participant"));
+};
+
 /**
  * exchanges the Users row with the participate-row
  * stores old userrow in Poll.currentEditUser
  */
 Poll.editUser = function (user) {
-	if (Poll.currentEditUser) {
-		Poll.cancelEdit();
-	}
-
-	Poll.oldParticipantRow.push($("#add_participant"));
+	Poll.cancelPossibleEdit();
 
 	$("#add_participant").remove();
 	var usercols = Poll.getColumns(user);
