@@ -60,7 +60,7 @@ class Extension
 end
 
 e = Extension.new
-e.add_lib("jquery-1.5.2.min")
+e.add_lib("jquery-2.2.3.min")
 e.add_lib("json2")
 e.add_lib("Gettext")
 
