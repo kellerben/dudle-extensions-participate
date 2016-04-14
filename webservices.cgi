@@ -24,12 +24,12 @@ require "cgi"
 $cgi = CGI.new
 $header = {}
 
-require "webservices"
+require_relative "webservices"
 
 webservices = {}
 all = []
 Poll.methods.collect{|m|
-	m.scan(/^webservicedescription_(.*)_(.*)$/)[0]
+	m.to_s.scan(/^webservicedescription_(.*)_(.*)$/)[0]
 }.compact.each{|category,webservice|
 	webservices[category] ||= []
 	webservices[category] << webservice

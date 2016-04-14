@@ -24,10 +24,10 @@ end
 require "pp"
 olddir = Dir.pwd
 Dir.chdir("../../")
-require "config_defaults"
+require_relative "../../config_defaults"
 Dir.chdir(olddir)
 
-require "cgistatus"
+require_relative "cgistatus"
 require "json"
 require "time"
 
