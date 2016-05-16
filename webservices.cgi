@@ -62,37 +62,36 @@ if all.include?($cgi["service"])
 else
 
 
-$out = <<NOTICE
-<h1>Available Polls</h1>
-<table>
-	<tr>
-		<th>Poll</th><th>Last change</th>
-	</tr>
-NOTICE
-Dir.glob("../../*/data.yaml").sort_by{|f|
-	File.new(f).mtime
-}.reverse.collect{|f| f.gsub(/\.\.\/\.\.\/(.*)\/data\.yaml$/,'\1') }.each{|site|
-	$out += <<NOTICE
-<tr>
-	<td class='polls'><a href='?pollID=#{CGI.escapeHTML(site).gsub("'","%27")}'>#{CGI.escapeHTML(site)}</a></td>
-	<td class='mtime'>#{File.new("../../#{site}/data.yaml").mtime.strftime('%d.%m, %H:%M')}</td>
-	<td><a href='../../#{CGI.escapeHTML(site).gsub("'","%27")}'>go there</a></td>
-	<td>
-	<div>
-		<form style='margin-bottom:0px' method='post' action='../../#{CGI.escapeHTML(site).gsub("'","%27")}/delete_poll.cgi'>
-			<div>
-				<input type='hidden' name='confirmnumber' value='0' />
-				<input type='hidden' name='confirm' value='phahqu3Uib4neiRi' />
-				<input type='submit' value='delete it!' />
-			</div>
-		</form>
-		</div>
-	</td>
-</tr>
-NOTICE
-}
-
-$out += "</table>"
+#$out = <<NOTICE
+#<h1>Available Polls</h1>
+#<table>
+	#<tr>
+		#<th>Poll</th><th>Last change</th>
+	#</tr>
+#NOTICE
+#Dir.glob("../../*/data.yaml").sort_by{|f|
+	#File.new(f).mtime
+#}.reverse.collect{|f| f.gsub(/\.\.\/\.\.\/(.*)\/data\.yaml$/,'\1') }.each{|site|
+	#$out += <<NOTICE
+#<tr>
+	#<td class='polls'><a href='?pollID=#{CGI.escapeHTML(site).gsub("'","%27")}'>#{CGI.escapeHTML(site)}</a></td>
+	#<td class='mtime'>#{File.new("../../#{site}/data.yaml").mtime.strftime('%d.%m, %H:%M')}</td>
+	#<td><a href='../../#{CGI.escapeHTML(site).gsub("'","%27")}'>go there</a></td>
+	#<td>
+	#<div>
+		#<form style='margin-bottom:0px' method='post' action='../../#{CGI.escapeHTML(site).gsub("'","%27")}/delete_poll.cgi'>
+			#<div>
+				#<input type='hidden' name='confirmnumber' value='0' />
+				#<input type='hidden' name='confirm' value='phahqu3Uib4neiRi' />
+				#<input type='submit' value='delete it!' />
+			#</div>
+		#</form>
+		#</div>
+	#</td>
+#</tr>
+#NOTICE
+#}
+#$out += "</table>"
 
 webservices.sort.each{|category,ws|
 	$out << "<h1>#{category}</h1>"
