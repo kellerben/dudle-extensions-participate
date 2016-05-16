@@ -61,7 +61,7 @@ if all.include?($cgi["service"])
 
 else
 
-
+$out = ""
 #$out = <<NOTICE
 #<h1>Available Polls</h1>
 #<table>
