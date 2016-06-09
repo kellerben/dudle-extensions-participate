@@ -284,8 +284,6 @@ Poll.sort = function (sortCol) {
 	} else {
 		$($("#participanttable th a")[sortCol]).addClass("headerSort");
 	}
-
-	$("#participanttable tr.participantrow").remove();
 	$("tbody#participants").append(trAry);
 };
 
