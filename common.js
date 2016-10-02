@@ -35,7 +35,7 @@ function printf(msg, replaceary) {
 	return Gettext.strargs(msg, replaceary); 
 }
 function escapeQuotes(s) {
-	return s.replace(/"/g, '\\"').replace(/'/g, "\\'");
+	return s.replace(/"/g, '').replace(/'/g, "");
 }
 function escapeHtml(s) {
 	return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -204,22 +204,33 @@ Poll.load = function (extID, key) {
 };
 
 Poll.addRow = function (columns) {
-	var tr = "<tr class='participantrow' id='" + columns.id + "_tr'><td>";
-	tr += columns.firstTD || "";
-	tr += "</td>";
-	tr += "<td class='name'>";
-	tr += columns.before_name || "";
-	tr += columns.name || "";
-	tr += columns.after_name || "";
-	tr += "</td>";
+	var tr,t;
+	tr = $("<tr />", {
+		'class' : 'participantrow',
+		'id'    : columns.id + "_tr"
+	});
+
+	t = $("<td />");
+	t.append(columns.firstTD || "");
+	tr.append(t);
+
+	tr.append(
+	 $("<td />", {
+		"class" : 'name',
+	 })
+		.append(columns.before_name || "")
+		.append($("<span/>", {"text" : columns.name || ""}))
+		.append(columns.after_name || "")
+	);
 
 	$.each(Poll.columns, function (i) {
-		tr += columns[Poll.columns[i]];
+		tr.append(columns[Poll.columns[i]]);
 	});
-	tr += "<td class='date'>";
-	tr += columns.lastTD || "";
-	tr += "</td>";
-	tr += "</tr>";
+
+	tr.append("<td/>",{
+		"class":'date',
+		"text" : columns.lastTD || ""
+	});
 	$("#participants").append(tr);
 
 	Poll.sort();
@@ -377,12 +388,21 @@ Poll.parseNaddRow = function (columns) {
 			};
 
 			if (columns.editUser && columns.deleteUser) {
-				colsHtml.firstTD = "<span class='edituser'>";
-				colsHtml.firstTD += "<a href='javascript:" + columns.editUser + "(\"" + escapeHtml(escape(columns.name)) + "\")' title='" + printf(_("Edit User %1 ..."), [columns.name]) + "'>";
-				colsHtml.firstTD += Poll.Strings.Edit + "</a>";
-				colsHtml.firstTD += " | ";
-				colsHtml.firstTD += "<a href='javascript:" + columns.deleteUser + "(\"" + columns.id + "\")' title='" + printf(_("Delete User %1 ..."), [columns.name]) + "'>";
-				colsHtml.firstTD += Poll.Strings.Delete + "</a></span>";
+				colsHtml.firstTD = $("<span class='edituser'>");
+				colsHtml.firstTD.append($("<a/>", {
+						"title": printf(_("Edit User %1 ..."), [columns.name]),
+							"href" : "#"
+					}).click(function(){columns.editUser(columns.id)})
+						.append(Poll.Strings.Edit)
+				);
+
+				colsHtml.firstTD.append(" | ");
+
+				colsHtml.firstTD.append($("<a/>",{
+						"title": printf(_("Delete User %1 ..."), [columns.name]),
+					}).click(function(){columns.deleteUser(columns.id)})
+						.append(Poll.Strings.Delete)
+				);
 			}
 
 			$.each(Poll.columns, function (i, col) {
@@ -395,8 +415,10 @@ Poll.parseNaddRow = function (columns) {
 					tdClass = 'undecided';
 					tdText = Poll.Strings.Unknown;
 				}
-
-				colsHtml[col] = "<td class='" + tdClass + "' title='" + Poll.participantRowTitle(columns.name, col) + "'>" + tdText + "</td>";
+				colsHtml[col] = $("<td/>",{
+					"class" : tdClass,
+					"title" : Poll.participantRowTitle(columns.name, col)
+				}).append(tdText);
 				colsSum[col] = avail === Poll.Strings.yes.val ? 1 : 0;
 			});
 
