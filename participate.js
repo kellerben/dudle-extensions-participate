@@ -35,7 +35,7 @@ Poll.exchangeAddParticipantRow = function (newInnerTR) {
 		$("#add_participant").replaceWith(Poll.oldParticipantRow.pop().clone());
 	} else {
 		Poll.oldParticipantRow.push($("#add_participant"));
-		$("#add_participant").replaceWith("<tr id='add_participant'>" + newInnerTR + "</tr>");
+		$("#add_participant").replaceWith($("<tr />", {"id" : 'add_participant'}).append(newInnerTR));
 	}
 };
 
@@ -160,9 +160,13 @@ Poll.editUser = function (user) {
 };
 
 Poll.addParticipantTR = function (id, tdInnerHtml) {
-	var tr = '<tr id="' + id + '" class="participantrow">';
-	tr += '<td colspan="' + (Poll.columns.length + 3) + '" >' + tdInnerHtml + '</td>';
-	tr += '</tr>';
+	var tr = $('<tr />', {
+		'class' : 'participantrow',
+		'id'    : id
+	});
+	tr.append($("<td />", {
+		'colspan' : (Poll.columns.length + 3),
+	}).append(tdInnerHtml));
 	$("#separator_top").before(tr);
 	return $("#" + id);
 };
@@ -170,7 +174,7 @@ Poll.addParticipantTR = function (id, tdInnerHtml) {
 Poll.hint = function (message, divClass) {
 	var id = "error_" + Math.round(Math.random() * 10000);
 	divClass = divClass || "hint";
-	Poll.addParticipantTR(id, "<div class='" + divClass + "'>" + escapeHtml(message) + "</div>");
+	Poll.addParticipantTR(id, $("<div/>",{ "class":divClass}).text(message));
 	window.setTimeout(function () {
 		$("#" + id + " div").animate({
 				opacity: 0,
@@ -198,42 +202,3 @@ $(document).ready(function () {
 	Poll.sort(Poll.columns.length + 1);
 
 });
-
-//window.setTimeout(test, 3);
-
-function test() {	// test
-	var username = "peter";
-	Poll.addRow({
-		id: username,
-		firstTD: "<span class='edituser'><a href='#editUser' username='" + username + "' title='" + printf(_("Edit User %1 ..."), [username]) + "'>" + Poll.Strings.Edit + "</a> | <a href='#deleteUser' username='" + username + "title='" + printf(_("Delete User %1 ..."), [username]) + "'>" + Poll.Strings.Delete + "</a></span>",
-		name: "foobarbaz",
-		"2011-04-25": "<td>a</td>",
-		"2011-04-26": "<td>b</td>",
-		"2011-04-28": "<td>d</td>",
-		"2011-04-27": "<td>c</td>"
-	});
-
-	Poll.parseNaddRow({
-		name: "foo2", 
-		"2011-04-25": "a_yes__",
-		"2011-04-26": "a_yes__",
-		"2011-04-27": "c_no___",
-		"2011-04-28": "b_maybe"
-	});
-	Poll.parseNaddRow({
-		name: "foo1", 
-		"2011-04-25": "a_yes__",
-		"2011-04-26": "a_yes__",
-		"2011-04-27": "c_no___",
-		"2011-04-28": "b_maybe"
-	});
-	Poll.parseNaddRow({
-		name: "foo9", 
-		"2011-04-25": "a_yes__",
-		"2011-04-26": "a_yes__",
-		"2011-04-27": "c_no___",
-		"2011-04-28": "b_maybe"
-	});
-
-}
-
