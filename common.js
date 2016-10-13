@@ -227,10 +227,10 @@ Poll.addRow = function (columns) {
 		tr.append(columns[Poll.columns[i]]);
 	});
 
-	tr.append("<td/>",{
+	tr.append($("<td />",{
 		"class":'date',
 		"text" : columns.lastTD || ""
-	});
+	}));
 	$("#participants").append(tr);
 
 	Poll.sort();
