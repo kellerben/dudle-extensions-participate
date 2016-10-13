@@ -391,7 +391,7 @@ Poll.parseNaddRow = function (columns) {
 				colsHtml.firstTD = $("<span class='edituser'>");
 				colsHtml.firstTD.append($("<a/>", {
 						"title": printf(_("Edit User %1 ..."), [columns.name]),
-							"href" : "#"
+						"href" : "#"
 					}).click(function(){columns.editUser(columns.id)})
 						.append(Poll.Strings.Edit)
 				);
@@ -400,7 +400,8 @@ Poll.parseNaddRow = function (columns) {
 
 				colsHtml.firstTD.append($("<a/>",{
 						"title": printf(_("Delete User %1 ..."), [columns.name]),
-					}).click(function(){columns.deleteUser(columns.id)})
+						"href" : "#"
+					}).click(function(){columns.deleteUser(columns.name)})
 						.append(Poll.Strings.Delete)
 				);
 			}
