@@ -22,17 +22,19 @@ require "json"
 class Extension
 	attr_reader :basedir
 	def initialize
-		@basedir = $d.is_poll? ? ".." : "." 
+		@basedir = $d.is_poll? ? ".." : "."
 		@basedir += "/extensions/#{$current_ext_dir}"
-		pofile = "#{@basedir}/locale/#{GetText.locale.language}/dudle.po"
-		if File.exists?(pofile)
-			$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{pofile}' />")
+		if GetText.locale.language =~ /^[a-zA-Z_]+$/
+			pofile = "#{@basedir}/locale/#{GetText.locale.language}/dudle.po"
+			if File.exists?(pofile)
+				$d.html.add_html_head("<link rel='gettext' type='application/x-po' href='#{pofile}' />")
+			end
 		end
 
 		if File.exists?("#{@basedir}/common.js")
 			add_script("common")
 		end
-		
+
 	end
 	def add_lib(jslib)
 		$d.html.add_head_script("#{@basedir}/lib/#{jslib}.js")
@@ -72,7 +74,7 @@ if File.exists?("#{e.basedir}/lib/#{datelib}.js")
 else
 	locale.gsub!(/-../,"")
 	try = Dir.new("#{e.basedir}/lib/datejs").to_a.collect{|f|
-		f =~ /date-#{locale}-..\.js/ ? f : nil 
+		f =~ /date-#{locale}-..\.js/ ? f : nil
 	}.compact.first
 	if try
 		e.add_lib("datejs/#{try.gsub(/\.js$/,"")}")
@@ -85,10 +87,10 @@ end
 $d.html.add_html_head(<<CSS
 <style type="text/css">
 <!--
-.headerSort:after { 
+.headerSort:after {
 	content: "#{SORT}";
-} 
-.headerSortReverse:after { 
+}
+.headerSortReverse:after {
 	content: "#{REVERSESORT}";
 }
 [class=header]:after {
