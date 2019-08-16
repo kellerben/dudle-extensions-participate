@@ -59,7 +59,7 @@ Poll.getColumns = function (user) {
  * the save button.
  * Poll.prepareParticipantInput(somefunc, {
  *   before: function () {
- *     $("#savebutton").value(_("Next));
+ *     $("#savebutton").value(_("Next"));
  *   }
  * ));
  */
